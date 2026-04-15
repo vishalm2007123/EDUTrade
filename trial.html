@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Trial Session{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div style="max-width:500px;margin:0 auto;text-align:center;">
+
+    <div class="card">
+      <div style="font-size:48px;margin-bottom:16px;">⏱️</div>
+      <h1 class="section-title">Trial Session</h1>
+      <p class="section-subtitle">Your 5-minute preview has started</p>
+
+      <div style="margin:32px 0;">
+        <div style="font-size:64px;font-weight:800;color:var(--primary);letter-spacing:-2px;" id="timer-display">5:00</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:8px;">Time remaining</div>
+      </div>
+
+      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:28px;">
+        <div id="timer-bar" style="height:100%;width:100%;background:var(--primary);border-radius:4px;transition:width 1s linear;"></div>
+      </div>
+
+      <div class="alert alert-info" style="text-align:left;">
+        <strong>Trial mode:</strong> You are previewing this session. Join with a bid to get full access.
+      </div>
+
+      <a href="{{ url_for('skills') }}" class="btn btn-primary btn-block" style="margin-top:16px;">Browse sessions to bid</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const TOTAL = 300;
+  let remaining = TOTAL;
+
+  const display = document.getElementById('timer-display');
+  const bar = document.getElementById('timer-bar');
+
+  function updateTimer() {
+    remaining--;
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    display.textContent = mins + ':' + String(secs).padStart(2, '0');
+    bar.style.width = ((remaining / TOTAL) * 100) + '%';
+
+    if (remaining <= 60) {
+      display.style.color = 'var(--danger)';
+      bar.style.background = 'var(--danger)';
+    }
+
+    if (remaining <= 0) {
+      display.textContent = '0:00';
+      alert('Trial ended! Bid on a session to get full access.');
+      window.location.href = "{{ url_for('skills') }}";
+    }
+  }
+
+  setInterval(updateTimer, 1000);
+</script>
+{% endblock %}

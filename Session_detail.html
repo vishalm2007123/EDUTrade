@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ sess.title }}{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div style="max-width:700px;margin:0 auto;">
+
+    <div style="margin-bottom:20px;">
+      <a href="{{ url_for('skills') }}" style="font-size:13px;color:var(--text-secondary);">← Back to sessions</a>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <span class="badge badge-{{ sess.status }}">{{ sess.status }}</span>
+        <span class="badge" style="background:var(--primary-light);color:#3730a3;border:1px solid #a5b4fc;">{{ sess.subject }}</span>
+      </div>
+
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:12px;letter-spacing:-0.3px;">{{ sess.title }}</h1>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div class="avatar">{{ sess.teacher_name[0] }}</div>
+        <div>
+          <div style="font-weight:500;font-size:14px;">{{ sess.teacher_name }}</div>
+          <div style="font-size:12px;color:var(--text-secondary);">
+            <span class="badge badge-certified" style="font-size:10px;">Certified Teacher</span>
+            &nbsp;{{ sess.get('teacher_area', '') }}
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:14px;line-height:1.7;color:var(--text-primary);margin-bottom:16px;">{{ sess.description }}</p>
+
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Schedule</div>
+          <div style="font-size:14px;font-weight:500;margin-top:2px;">{{ sess.schedule }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Min bid</div>
+          <div style="font-size:14px;font-weight:500;color:var(--coin-color);margin-top:2px;">{{ sess.min_bid }} coins</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Highest bid</div>
+          <div style="font-size:14px;font-weight:600;color:var(--coin-color);margin-top:2px;">{{ sess.current_highest_bid }} coins</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Total bids</div>
+          <div style="font-size:14px;font-weight:500;margin-top:2px;">{{ sess.bids_count }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if session.user_id %}
+      {% if sess.status == 'open' %}
+        {% if user and not user.is_certified and str(user._id) != sess.teacher_id %}
+          <div class="card" style="margin-bottom:20px;border-color:var(--primary);">
+            <div class="card-header">
+              <div class="card-title">Place your bid</div>
+              <span class="coin-pill">
+                <span class="coin-icon"></span>
+                <span>You have {{ user.coins }} coins</span>
+              </span>
+            </div>
+
+            <form method="POST" action="{{ url_for('place_bid', session_id=sess._id) }}">
+              <div class="form-group">
+                <label class="form-label">Bid amount (coins)</label>
+                <input type="number" id="bid-amount-input" name="amount" class="form-control"
+                  min="{{ (sess.current_highest_bid + 1) if sess.current_highest_bid > 0 else sess.min_bid }}"
+                  max="{{ user.coins }}"
+                  value="{{ (sess.current_highest_bid + 10) if sess.current_highest_bid > 0 else sess.min_bid }}"
+                  required>
+                <input type="range" id="bid-range"
+                  min="{{ (sess.current_highest_bid + 1) if sess.current_highest_bid > 0 else sess.min_bid }}"
+                  max="{{ user.coins }}"
+                  value="{{ (sess.current_highest_bid + 10) if sess.current_highest_bid > 0 else sess.min_bid }}"
+                  style="width:100%;margin-top:10px;">
+                <div class="form-hint">
+                  Minimum: {{ sess.min_bid }} coins &bull; Must beat current highest: {{ sess.current_highest_bid }} coins
+                </div>
+              </div>
+              <div style="background:var(--accent-light);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:#78350f;margin-bottom:14px;">
+                Winning this bid earns you <strong>100 + bonus coins</strong> when the session is completed.
+              </div>
+              <button type="submit" class="btn btn-accent btn-block">Place bid</button>
+            </form>
+          </div>
+
+        {% elif user and user.is_certified %}
+          <div class="cert-gate-notice">
+            <div class="notice-icon">🎓</div>
+            <div class="notice-text">
+              <strong>Certified teachers cannot bid</strong>
+              You can create your own sessions for learners to bid on.
+              <a href="{{ url_for('create_session') }}">Create a session</a>
+            </div>
+          </div>
+        {% elif user and str(user._id) == sess.teacher_id %}
+          <div class="alert alert-info">This is your session. You cannot bid on it.</div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-info">This session is {{ sess.status }} and no longer accepting bids.</div>
+      {% endif %}
+    {% else %}
+      <div class="card" style="text-align:center;padding:32px;">
+        <div style="font-size:28px;margin-bottom:10px;">🔒</div>
+        <div style="font-weight:600;margin-bottom:6px;">Login to place a bid</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Join EduSwap free and get 100 starter coins.</p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <a href="{{ url_for('login') }}" class="btn btn-secondary">Log in</a>
+          <a href="{{ url_for('register') }}" class="btn btn-primary">Join free</a>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if bids %}
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent bids</div>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Bidder</th>
+              <th>Amount</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bid in bids %}
+              <tr>
+                <td>
+                  <div class="user-row">
+                    <div class="avatar">{{ bid.bidder_name[0] }}</div>
+                    <span class="user-name">{{ bid.bidder_name }}</span>
+                  </div>
+                </td>
+                <td><strong style="color:var(--coin-color);">{{ bid.amount }} coins</strong></td>
+                <td style="color:var(--text-secondary);font-size:12px;">{{ bid.created_at.strftime('%d %b, %I:%M %p') if bid.created_at else '' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

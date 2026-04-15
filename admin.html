@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-content" style="padding-top:0;">
+
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Admin Dashboard</h1>
+      <p class="section-subtitle">Platform overview and management</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="avatar avatar-lg" style="background:#fee2e2;color:#ef4444;">{{ admin_user.name[0] }}</div>
+      <div>
+        <div style="font-weight:600;">{{ admin_user.name }}</div>
+        <div style="font-size:12px;color:var(--text-muted);">Platform Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row" style="margin-bottom:32px;">
+    <div class="stat-card fade-in-card">
+      <div class="stat-number">{{ stats.total_users }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card fade-in-card">
+      <div class="stat-number" style="color:var(--success);">{{ stats.certified_users }}</div>
+      <div class="stat-label">Certified Teachers</div>
+    </div>
+    <div class="stat-card fade-in-card">
+      <div class="stat-number" style="color:var(--primary);">{{ stats.open_sessions }}</div>
+      <div class="stat-label">Open Sessions</div>
+    </div>
+    <div class="stat-card fade-in-card">
+      <div class="stat-number" style="color:var(--accent);">{{ stats.total_bids }}</div>
+      <div class="stat-label">Total Bids</div>
+    </div>
+    <div class="stat-card fade-in-card">
+      <div class="stat-number" style="color:{% if stats.pending_certs > 0 %}var(--danger){% else %}var(--success){% endif %};">{{ stats.pending_certs }}</div>
+      <div class="stat-label">Pending Certs</div>
+    </div>
+    <div class="stat-card fade-in-card">
+      <div class="stat-number">{{ stats.completed_sessions }}</div>
+      <div class="stat-label">Completed Sessions</div>
+    </div>
+  </div>
+
+  <!-- PENDING CERTS -->
+  <div id="certs">
+    <div class="page-header" style="margin-bottom:16px;">
+      <h2 class="section-title">
+        ⏳ Pending Certificate Verifications
+        {% if stats.pending_certs > 0 %}
+          <span class="badge" style="background:var(--danger-light);color:#7f1d1d;border:1px solid #fca5a5;margin-left:8px;">{{ stats.pending_certs }}</span>
+        {% endif %}
+      </h2>
+    </div>
+
+    {% if pending_certs %}
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+        {% for u in pending_certs %}
+          <div class="card fade-in-card" style="border-left:4px solid var(--warning);">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="avatar avatar-lg" style="background:var(--warning-light);color:#92400e;">{{ u.name[0] }}</div>
+                <div>
+                  <div style="font-weight:600;font-size:15px;">{{ u.name }}</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">{{ u.email }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                    📍 {{ u.area }} &bull; 🏫 {{ u.get('college','N/A') }} &bull; ⚧ {{ u.gender | capitalize }}
+                  </div>
+                  {% if u.get('skills_offered') %}
+                    <div style="font-size:12px;color:var(--primary);margin-top:4px;">
+                      Skills to teach: {{ u.skills_offered | join(', ') }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                {% if u.get('certificate_path') %}
+                  <span class="badge badge-pending">📎 Cert uploaded</span>
+                {% endif %}
+                <form method="POST" action="{{ url_for('verify_certificate', user_id=u._id) }}" style="display:inline;">
+                  <input type="hidden" name="action" value="approve">
+                  <button type="submit" class="btn btn-success btn-sm">✓ Approve (+500 coins)</button>
+                </form>
+                <form method="POST" action="{{ url_for('verify_certificate', user_id=u._id) }}" style="display:inline;" class="confirm-action" data-confirm="Reject certificate for {{ u.name }}?">
+                  <input type="hidden" name="action" value="reject">
+                  <button type="submit" class="btn btn-danger btn-sm">✗ Reject</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:30px;margin-bottom:24px;">
+        <h3>No pending certificates</h3>
+        <p>All certificates have been reviewed.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ALL SESSIONS -->
+  <div id="sessions">
+    <h2 class="section-title" style="margin-bottom:16px;">📚 All Sessions</h2>
+    {% if all_sessions %}
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:32px;">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Teacher</th>
+              <th>Subject</th>
+              <th>Bids</th>
+              <th>Highest Bid</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in all_sessions %}
+              <tr class="fade-in-card">
+                <td style="font-weight:500;max-width:240px;">{{ s.title[:60] }}{% if s.title|length > 60 %}...{% endif %}</td>
+                <td style="font-size:13px;">{{ s.teacher_name }}</td>
+                <td><span class="badge" style="background:var(--primary-light);color:#3730a3;border:1px solid #a5b4fc;">{{ s.subject }}</span></td>
+                <td>{{ s.bids_count }}</td>
+                <td style="font-weight:600;color:var(--coin-color);">{{ s.current_highest_bid }} coins</td>
+                <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
+                <td>
+                  <a href="{{ url_for('session_detail', session_id=s._id) }}" class="btn btn-sm btn-secondary">View</a>
+                  <form method="POST" action="{{ url_for('admin_delete_session', session_id=s._id) }}" style="display:inline;" class="confirm-action" data-confirm="Delete this session?">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:30px;margin-bottom:24px;">
+        <h3>No sessions yet</h3>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ALL USERS -->
+  <div id="users">
+    <h2 class="section-title" style="margin-bottom:16px;">👥 All Users</h2>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Area</th>
+            <th>College</th>
+            <th>Coins</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in all_users %}
+            <tr class="fade-in-card">
+              <td>
+                <div class="user-row">
+                  <div class="avatar">{{ u.name[0] }}</div>
+                  <div>
+                    <div class="user-name">{{ u.name }}</div>
+                    <div class="user-meta">{{ u.gender | capitalize if u.gender else '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:13px;color:var(--text-secondary);">{{ u.email }}</td>
+              <td style="font-size:13px;">{{ u.get('area','—') }}</td>
+              <td style="font-size:12px;color:var(--text-muted);">{{ u.get('college','—') }}</td>
+              <td style="font-weight:700;color:var(--coin-color);">{{ u.coins }}</td>
+              <td>
+                {% if u.is_certified %}
+                  <span class="badge badge-certified">Certified</span>
+                {% elif u.get('cert_status') == 'pending' %}
+                  <span class="badge badge-pending">Pending</span>
+                {% else %}
+                  <span class="badge badge-learner">Learner</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('admin_toggle_certify', user_id=u._id) }}" style="display:inline;" class="confirm-action" data-confirm="Toggle certification for {{ u.name }}?">
+                  <button type="submit" class="btn btn-sm {% if u.is_certified %}btn-danger{% else %}btn-success{% endif %}">
+                    {% if u.is_certified %}Revoke{% else %}Certify{% endif %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

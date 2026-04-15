@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Browse Skills{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Browse skill sessions</h1>
+      <p class="section-subtitle">All sessions are offered by verified, certified teachers</p>
+    </div>
+    {% if session.user_id %}
+      {% set current_user = session %}
+    {% endif %}
+  </div>
+
+  <form id="skill-search-form" method="GET" action="{{ url_for('skills') }}">
+    <div class="search-bar">
+      <input type="text" id="skill-search-input" name="q" class="form-control" placeholder="Search by skill, subject or keyword..." value="{{ query }}">
+      <input type="text" name="area" class="form-control" placeholder="Filter by city/area" value="{{ area }}" style="max-width:180px;">
+      <select name="subject" class="form-control" style="max-width:180px;">
+        <option value="">All subjects</option>
+        <option value="Programming" {% if subject == 'Programming' %}selected{% endif %}>Programming</option>
+        <option value="Design" {% if subject == 'Design' %}selected{% endif %}>Design</option>
+        <option value="Business" {% if subject == 'Business' %}selected{% endif %}>Business</option>
+        <option value="Data" {% if subject == 'Data' %}selected{% endif %}>Data</option>
+        <option value="Languages" {% if subject == 'Languages' %}selected{% endif %}>Languages</option>
+        <option value="Mathematics" {% if subject == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+        <option value="Science" {% if subject == 'Science' %}selected{% endif %}>Science</option>
+        <option value="Arts" {% if subject == 'Arts' %}selected{% endif %}>Arts</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Search</button>
+      {% if query or area or subject %}
+        <a href="{{ url_for('skills') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if sessions %}
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
+      {{ sessions|length }} session{{ 's' if sessions|length != 1 else '' }} found
+    </div>
+    <div class="skills-grid">
+      {% for s in sessions %}
+        <div class="skill-card fade-in-card">
+          <div>
+            <span class="badge badge-open">Open</span>
+            <span class="badge" style="background:var(--primary-light);color:#3730a3;border:1px solid #a5b4fc;margin-left:4px;">{{ s.subject }}</span>
+          </div>
+          <div class="skill-card-title">{{ s.title }}</div>
+          <div class="skill-card-teacher">
+            <span class="avatar" style="width:24px;height:24px;font-size:11px;">{{ s.teacher_name[0] }}</span>
+            {{ s.teacher_name }}
+            <span class="badge badge-certified" style="font-size:10px;">Verified</span>
+          </div>
+          <div class="skill-card-desc">{{ s.description[:120] }}{% if s.description|length > 120 %}...{% endif %}</div>
+          <div style="font-size:12px;color:var(--text-muted);">
+            📍 {{ s.get('area', 'Any') }} &bull; 📅 {{ s.schedule }}
+          </div>
+          <div class="skill-card-footer">
+            <div>
+              <div class="bid-amount">{{ s.current_highest_bid or s.min_bid }} coins</div>
+              <div style="font-size:11px;color:var(--text-muted);">{{ s.bids_count }} bids &bull; Min: {{ s.min_bid }}</div>
+            </div>
+            <a href="{{ url_for('session_detail', session_id=s._id) }}" class="btn btn-primary btn-sm">View &amp; Bid</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>No sessions found</h3>
+      <p>Try a different search term or clear the filters.</p>
+      <a href="{{ url_for('skills') }}" class="btn btn-secondary">Clear filters</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

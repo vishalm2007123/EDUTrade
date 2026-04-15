@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="page-hero" style="padding:40px 20px;">
+  <div class="container">
+    <h1 style="font-size:28px;">Community Leaderboard</h1>
+    <p>Top learners and teachers ranked by Community Coins</p>
+  </div>
+</div>
+
+<div class="container page-content">
+
+  <form method="GET" action="{{ url_for('leaderboard') }}" style="margin-bottom:24px;">
+    <div class="filter-row">
+      <select name="area" class="form-control" style="max-width:200px;">
+        <option value="">All areas</option>
+        {% for a in areas %}
+          <option value="{{ a }}" {% if a == selected_area %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+      <select name="gender" class="form-control" style="max-width:160px;">
+        <option value="">All genders</option>
+        <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
+        <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
+        <option value="other" {% if selected_gender == 'other' %}selected{% endif %}>Other</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if selected_area or selected_gender %}
+        <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="card">
+    {% if top_users %}
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th style="width:48px;">Rank</th>
+            <th>User</th>
+            <th>Area</th>
+            <th>Status</th>
+            <th>Sessions</th>
+            <th>Coins</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in top_users %}
+            <tr class="fade-in-card">
+              <td>
+                {% if loop.index == 1 %}
+                  <span class="rank-badge rank-1">1</span>
+                {% elif loop.index == 2 %}
+                  <span class="rank-badge rank-2">2</span>
+                {% elif loop.index == 3 %}
+                  <span class="rank-badge rank-3">3</span>
+                {% else %}
+                  <span class="rank-badge rank-other">{{ loop.index }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="user-row">
+                  <div class="avatar">{{ u.name[0] }}</div>
+                  <div>
+                    <div class="user-name">{{ u.name }}</div>
+                    <div class="user-meta">{{ u.gender | capitalize if u.gender else '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:13px;color:var(--text-secondary);">{{ u.get('area', '—') }}</td>
+              <td>
+                {% if u.is_certified %}
+                  <span class="badge badge-certified">Certified</span>
+                {% else %}
+                  <span class="badge badge-learner">Learner</span>
+                {% endif %}
+              </td>
+              <td style="font-size:14px;font-weight:500;">{{ u.get('sessions_completed', 0) }}</td>
+              <td>
+                <span style="font-weight:700;color:var(--coin-color);font-size:15px;">{{ u.coins }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <h3>No users yet</h3>
+        <p>Be the first to join and top the leaderboard.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Join EduSwap</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

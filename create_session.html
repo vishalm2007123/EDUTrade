@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Create Session{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div style="max-width:580px;margin:0 auto;">
+
+    <div class="page-header">
+      <div>
+        <h1 class="section-title">Create a skill session</h1>
+        <p class="section-subtitle">Offer your expertise — learners will bid Community Coins to join</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <form method="POST" action="{{ url_for('create_session') }}">
+
+        <div class="form-group">
+          <label class="form-label">Session title</label>
+          <input type="text" name="title" class="form-control" placeholder="e.g. Python for beginners — 1 hour live session" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Subject category</label>
+            <select name="subject" class="form-control" required>
+              <option value="" disabled selected>Choose category</option>
+              <option value="Programming">Programming</option>
+              <option value="Design">Design</option>
+              <option value="Business">Business</option>
+              <option value="Data">Data Science</option>
+              <option value="Languages">Languages</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Science">Science</option>
+              <option value="Arts">Arts</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your city / area</label>
+            <input type="text" name="area" class="form-control" value="{{ user.get('area', '') }}" placeholder="e.g. Chennai">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" placeholder="Describe what learners will gain, your approach, prerequisites..." required data-maxlength="500" data-counter="desc-counter"></textarea>
+          <div class="form-hint" id="desc-counter"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Minimum bid (coins)</label>
+            <input type="number" name="min_bid" class="form-control" value="50" min="10" max="5000" required>
+            <div class="form-hint">Learners must bid at least this many coins</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Schedule</label>
+            <input type="text" name="schedule" class="form-control" placeholder="e.g. Sat 4pm IST or Flexible" required>
+          </div>
+        </div>
+
+        <div style="background:var(--success-light);border:1px solid #6ee7b7;border-radius:var(--radius-sm);padding:14px;font-size:13px;color:#065f46;margin-bottom:18px;">
+          <strong>Teacher reward:</strong> When you mark a session complete, you earn <strong>50 coins</strong> and the winning learner earns <strong>100 + bonus coins</strong>.
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Create session</button>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

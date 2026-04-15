@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="page-hero" style="margin:-20px -20px 0;">
+  <div class="hero-content">
+    <div class="hero-tag">🎓 Certificate-Gated Skill Exchange</div>
+    <h1>Learn. Teach. <span class="hero-highlight">Grow.</span></h1>
+    <p>EduTRADE is a peer-to-peer skill barter platform where verified teachers offer live sessions and learners bid Community Coins to join. No cash. No barriers. Just skills.</p>
+    <div class="hero-actions">
+      {% if not session.user_id %}
+        <a href="{{ url_for('register') }}" class="btn btn-white btn-lg">Join Free — Get 100 Coins</a>
+        <a href="{{ url_for('skills') }}" class="btn btn-outline-white btn-lg">Browse Sessions</a>
+      {% else %}
+        <a href="{{ url_for('skills') }}" class="btn btn-white btn-lg">Browse Sessions</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-white btn-lg">My Dashboard</a>
+      {% endif %}
+    </div>
+    <div class="hero-note">
+      <span>🔒 Admin?</span>
+      <a href="{{ url_for('admin_login') }}" style="color:rgba(255,255,255,0.9);text-decoration:underline;margin-left:4px;">Access admin portal →</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card-float">
+      <div class="hf-row"><span class="hf-avatar">P</span><div><div class="hf-name">Priya S.</div><div class="hf-tag">Certified Teacher</div></div></div>
+      <div class="hf-title">Python for Beginners</div>
+      <div class="hf-bid">🪙 110 coins — 3 bids</div>
+    </div>
+    <div class="hero-card-float" style="margin-top:14px;opacity:0.85;transform:translateX(20px);">
+      <div class="hf-row"><span class="hf-avatar" style="background:#d97706;">A</span><div><div class="hf-name">Arjun M.</div><div class="hf-tag">Certified Teacher</div></div></div>
+      <div class="hf-title">React Full-Stack Workshop</div>
+      <div class="hf-bid">🪙 130 coins — 2 bids</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" style="margin-top:32px;">
+  <div class="stat-card fade-in-card">
+    <div class="stat-number">{{ stats.total_users }}+</div>
+    <div class="stat-label">Active learners</div>
+  </div>
+  <div class="stat-card fade-in-card">
+    <div class="stat-number">{{ stats.certified }}+</div>
+    <div class="stat-label">Certified teachers</div>
+  </div>
+  <div class="stat-card fade-in-card">
+    <div class="stat-number">{{ stats.sessions }}+</div>
+    <div class="stat-label">Sessions listed</div>
+  </div>
+  <div class="stat-card fade-in-card">
+    <div class="stat-number">SDG 4 &amp; 8</div>
+    <div class="stat-label">UN goals supported</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section">
+  <h2 class="section-title" style="text-align:center;">How EduSwap works</h2>
+  <p class="section-subtitle" style="text-align:center;max-width:500px;margin:0 auto 32px;">A simple 4-step loop that turns knowledge into currency</p>
+  <div class="how-grid">
+    <div class="how-step fade-in-card">
+      <div class="how-number">01</div>
+      <div class="how-icon">📝</div>
+      <h3>Register & get coins</h3>
+      <p>Sign up for free and instantly receive <strong>100 Community Coins</strong> to start bidding on sessions.</p>
+    </div>
+    <div class="how-step fade-in-card">
+      <div class="how-number">02</div>
+      <div class="how-icon">🎓</div>
+      <h3>Upload your certificate</h3>
+      <p>Have a skill to teach? Upload your certificate. Admin verifies it and grants you <strong>500 coins + teacher status</strong>.</p>
+    </div>
+    <div class="how-step fade-in-card">
+      <div class="how-number">03</div>
+      <div class="how-icon">🪙</div>
+      <h3>Bid to learn</h3>
+      <p>Browse live sessions by certified teachers. Place bids using your Community Coins — highest bidder wins the seat.</p>
+    </div>
+    <div class="how-step fade-in-card">
+      <div class="how-number">04</div>
+      <div class="how-icon">🎁</div>
+      <h3>Earn & redeem</h3>
+      <p>Complete sessions to earn bonus coins. Redeem them for real course coupons on Udemy, Coursera and more.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- LATEST SESSIONS -->
+<div class="page-header">
+  <div>
+    <h2 class="section-title">Latest skill sessions</h2>
+    <p class="section-subtitle">Bid with your Community Coins to join a session</p>
+  </div>
+  <a href="{{ url_for('skills') }}" class="btn btn-secondary">View all →</a>
+</div>
+
+{% if skills %}
+  <div class="skills-grid">
+    {% for s in skills %}
+      <div class="skill-card fade-in-card">
+        <div>
+          <span class="badge badge-open">Open</span>
+          <span class="badge" style="background:var(--primary-light);color:#3730a3;border:1px solid #a5b4fc;margin-left:4px;">{{ s.subject }}</span>
+        </div>
+        <div class="skill-card-title">{{ s.title }}</div>
+        <div class="skill-card-teacher">
+          <span class="avatar" style="width:24px;height:24px;font-size:11px;">{{ s.teacher_name[0] }}</span>
+          {{ s.teacher_name }}
+          <span class="badge badge-certified" style="font-size:10px;">Certified</span>
+        </div>
+        <div class="skill-card-desc">{{ s.description[:100] }}{% if s.description|length > 100 %}...{% endif %}</div>
+        <div class="skill-card-footer">
+          <div>
+            <div class="bid-amount">{{ s.current_highest_bid or s.min_bid }} coins</div>
+            <div style="font-size:11px;color:var(--text-muted);">{{ s.bids_count }} bids · Min: {{ s.min_bid }}</div>
+          </div>
+          <a href="{{ url_for('session_detail', session_id=s._id) }}" class="btn btn-primary btn-sm">View &amp; Bid</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h3>No sessions yet</h3>
+    <p>Be the first certified teacher to create a session.</p>
+  </div>
+{% endif %}
+
+<div class="divider"></div>
+
+<!-- FEATURE CARDS -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:8px;">
+  <div class="card fade-in-card">
+    <div style="font-size:28px;margin-bottom:10px;">🎓</div>
+    <div class="card-title">Upload your certificate</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:8px 0 16px;">Get verified and earn 500 coins. Unlock teacher mode.</p>
+    <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm">Upload now</a>
+  </div>
+  <div class="card fade-in-card">
+    <div style="font-size:28px;margin-bottom:10px;">🪙</div>
+    <div class="card-title">Earn Community Coins</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:8px 0 16px;">Every completed session, verification and bid earns you coins.</p>
+    <a href="{{ url_for('rewards') }}" class="btn btn-accent btn-sm">View rewards</a>
+  </div>
+  <div class="card fade-in-card">
+    <div style="font-size:28px;margin-bottom:10px;">🗺️</div>
+    <div class="card-title">Plan your career</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:8px 0 16px;">Explore skill trees across programming, design, business and more.</p>
+    <a href="{{ url_for('career') }}" class="btn btn-secondary btn-sm">Explore paths</a>
+  </div>
+  <div class="card fade-in-card">
+    <div style="font-size:28px;margin-bottom:10px;">📊</div>
+    <div class="card-title">Learning Heatmap</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:8px 0 16px;">See where learners and teachers are concentrated across colleges and cities.</p>
+    <a href="{{ url_for('heatmap') }}" class="btn btn-secondary btn-sm">View heatmap</a>
+  </div>
+</div>
+
+<!-- ROLE CTA SPLIT -->
+<div class="role-split">
+  <div class="role-card role-learner">
+    <div class="role-icon">👨‍🎓</div>
+    <h3>I'm a Learner</h3>
+    <p>Browse sessions from certified teachers, place bids, attend live sessions and earn coins. Redeem for real certifications.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary">Register as Learner</a>
+  </div>
+  <div class="role-divider">or</div>
+  <div class="role-card role-teacher">
+    <div class="role-icon">👨‍🏫</div>
+    <h3>I'm a Teacher</h3>
+    <p>Upload your certificate, get certified by admin, then list skill sessions. Learners bid — you earn coins and reputation.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-accent">Register as Teacher</a>
+  </div>
+</div>
+
+{% endblock %}

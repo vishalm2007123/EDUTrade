@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div style="max-width:660px;margin:0 auto;">
+
+    <div class="page-header">
+      <div>
+        <h1 class="section-title">My profile</h1>
+        <p class="section-subtitle">Manage your skills and upload your certificate</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div class="avatar avatar-lg">{{ user.name[0] }}</div>
+        <div>
+          <div style="font-size:18px;font-weight:600;">{{ user.name }}</div>
+          <div style="font-size:13px;color:var(--text-secondary);">{{ user.email }}</div>
+          <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+            {% if user.is_certified %}
+              <span class="badge badge-certified">Certified Teacher</span>
+            {% else %}
+              <span class="badge badge-learner">Learner</span>
+            {% endif %}
+            {% if user.get('cert_status') == 'pending' %}
+              <span class="badge badge-pending">Certificate pending</span>
+            {% endif %}
+          </div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:24px;font-weight:700;color:var(--coin-color);">{{ user.coins }}</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Community Coins</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Edit profile</div>
+      </div>
+
+      <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label class="form-label">Skills I can teach (comma separated)</label>
+          <input type="text" name="skills_offered" class="form-control" placeholder="e.g. Python, Graphic Design, Maths"
+            value="{{ user.skills_offered | join(', ') if user.skills_offered else '' }}">
+          <div class="form-hint">Only applicable if you are a certified teacher</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Skills I want to learn (comma separated)</label>
+          <input type="text" name="skills_wanted" class="form-control" placeholder="e.g. JavaScript, Public Speaking"
+            value="{{ user.skills_wanted | join(', ') if user.skills_wanted else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bio</label>
+          <textarea name="bio" class="form-control" placeholder="Tell the community about yourself..." data-maxlength="300" data-counter="bio-counter">{{ user.get('bio', '') }}</textarea>
+          <div class="form-hint" id="bio-counter"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group">
+          <label class="form-label">Upload certificate</label>
+          {% if user.is_certified %}
+            <div class="alert alert-success" style="margin-bottom:10px;">
+              Your certificate is verified. You are a certified teacher!
+            </div>
+          {% elif user.get('cert_status') == 'pending' %}
+            <div class="alert alert-warning" style="margin-bottom:10px;">
+              Certificate uploaded and awaiting admin verification.
+            </div>
+          {% else %}
+            <div class="cert-gate-notice">
+              <div class="notice-icon">📄</div>
+              <div class="notice-text">
+                <strong>Upload to unlock teacher mode</strong>
+                After admin approval, you earn <strong>500 Community Coins</strong> and can offer skill sessions for bidding.
+              </div>
+            </div>
+            <label style="display:block;border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+              <input type="file" id="certificate-upload" name="certificate" accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+              <div style="font-size:28px;margin-bottom:8px;">📎</div>
+              <div id="file-label" style="font-size:13px;color:var(--text-secondary);">Choose certificate file (PDF, PNG, JPG)</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Max size: 5MB</div>
+            </label>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Save profile</button>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

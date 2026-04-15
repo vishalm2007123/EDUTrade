@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="avatar avatar-lg">{{ user.name[0] }}</div>
+      <div>
+        <h1 style="font-size:22px;font-weight:700;">{{ user.name }}</h1>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          {% if user.is_certified %}
+            <span class="badge badge-certified">Certified Teacher</span>
+          {% else %}
+            <span class="badge badge-learner">Learner</span>
+          {% endif %}
+          <span style="font-size:13px;color:var(--text-secondary);">{{ user.area }}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="{{ url_for('profile') }}" class="btn btn-secondary">Edit profile</a>
+      {% if user.is_certified %}
+        <a href="{{ url_for('create_session') }}" class="btn btn-primary">+ Create session</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number" style="color:var(--coin-color);">{{ user.coins }}</div>
+      <div class="stat-label">Community Coins</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ user.get('sessions_completed', 0) }}</div>
+      <div class="stat-label">Sessions completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ my_sessions|length }}</div>
+      <div class="stat-label">Sessions offered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ my_bids|length }}</div>
+      <div class="stat-label">Bids placed</div>
+    </div>
+  </div>
+
+  {% if not user.is_certified %}
+    <div class="cert-gate-notice" style="margin-bottom:24px;">
+      <div class="notice-icon">🎓</div>
+      <div class="notice-text">
+        <strong>Unlock teacher mode</strong>
+        Upload your certificate on your <a href="{{ url_for('profile') }}">profile page</a> to get verified. Once approved, you earn 500 coins and can offer skill sessions.
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-sessions">My sessions</button>
+      <button class="tab-btn" data-tab="tab-bids">My bids</button>
+    </div>
+
+    <div id="tab-sessions" class="tab-panel active">
+      {% if my_sessions %}
+        <div class="skills-grid">
+          {% for s in my_sessions %}
+            <div class="skill-card fade-in-card">
+              <div>
+                <span class="badge badge-{{ s.status }}">{{ s.status }}</span>
+                <span class="badge" style="background:var(--primary-light);color:#3730a3;border:1px solid #a5b4fc;margin-left:4px;">{{ s.subject }}</span>
+              </div>
+              <div class="skill-card-title">{{ s.title }}</div>
+              <div class="skill-card-desc">{{ s.description[:80] }}...</div>
+              <div style="font-size:13px;color:var(--text-secondary);">
+                {{ s.bids_count }} bids &bull; Highest: <strong style="color:var(--coin-color);">{{ s.current_highest_bid }} coins</strong>
+              </div>
+              {% if s.highest_bidder_name %}
+                <div style="font-size:12px;color:var(--text-muted);">Top bidder: {{ s.highest_bidder_name }}</div>
+              {% endif %}
+              <div class="skill-card-footer">
+                <a href="{{ url_for('session_detail', session_id=s._id) }}" class="btn btn-secondary btn-sm">View</a>
+                {% if s.status == 'open' and s.highest_bidder_id %}
+                  <form method="POST" action="{{ url_for('complete_session', session_id=s._id) }}" class="confirm-action" data-confirm="Mark this session as completed?">
+                    <button type="submit" class="btn btn-success btn-sm">Mark complete</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <h3>No sessions yet</h3>
+          {% if user.is_certified %}
+            <p>Create your first skill session for learners to bid on.</p>
+            <a href="{{ url_for('create_session') }}" class="btn btn-primary">Create session</a>
+          {% else %}
+            <p>Get certified to start offering skill sessions.</p>
+            <a href="{{ url_for('profile') }}" class="btn btn-primary">Upload certificate</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div id="tab-bids" class="tab-panel">
+      {% if my_bids %}
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          {% for bid in my_bids %}
+            <div class="card fade-in-card" style="padding:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                <div>
+                  <div style="font-weight:600;font-size:14px;">{{ bid.session_title }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ bid.created_at.strftime('%d %b %Y, %I:%M %p') if bid.created_at else '' }}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:700;color:var(--coin-color);font-size:16px;">{{ bid.amount }} coins</div>
+                  <span class="badge badge-{{ bid.status }}" style="font-size:10px;">{{ bid.status }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <h3>No bids yet</h3>
+          <p>Browse skill sessions and place your first bid.</p>
+          <a href="{{ url_for('skills') }}" class="btn btn-primary">Browse sessions</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

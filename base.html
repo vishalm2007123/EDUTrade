@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}EduSwap{% endblock %} — Skill Barter Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='stylecss.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if session.get('is_admin') %}
+<!-- ── ADMIN NAV ── -->
+<nav class="navbar admin-nav">
+  <div class="navbar-inner">
+    <a href="{{ url_for('admin') }}" class="navbar-brand">Edu<span>Swap</span> <span class="admin-badge-nav">ADMIN</span></a>
+    <ul class="navbar-links">
+      <li><a href="{{ url_for('admin') }}">Dashboard</a></li>
+      <li><a href="{{ url_for('admin') }}#users">Users</a></li>
+      <li><a href="{{ url_for('admin') }}#certs">Certificates</a></li>
+      <li><a href="{{ url_for('admin') }}#sessions">Sessions</a></li>
+      <li><a href="{{ url_for('heatmap') }}">Heatmap</a></li>
+      <li><a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-danger">Logout</a></li>
+    </ul>
+    <button class="nav-hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+{% else %}
+<!-- ── USER NAV ── -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="{{ url_for('index') }}" class="navbar-brand">Edu<span>Swap</span></a>
+    <ul class="navbar-links">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('skills') }}">Browse Skills</a></li>
+      <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+      <li><a href="{{ url_for('career') }}">Career Paths</a></li>
+      <li><a href="{{ url_for('heatmap') }}">Heatmap</a></li>
+
+      {% if 'user_id' in session %}
+        <li><a href="{{ url_for('rewards') }}">Rewards</a></li>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li>
+          <span class="coin-pill">
+            <span class="coin-icon"></span>
+            <span id="navbar-coin-count">...</span>
+          </span>
+        </li>
+        <li><a href="{{ url_for('logout') }}" class="btn btn-sm btn-secondary">Logout</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}" class="btn btn-sm btn-secondary">Login</a></li>
+        <li><a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Join Free</a></li>
+      {% endif %}
+    </ul>
+    <button class="nav-hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+{% endif %}
+
+<main>
+  <div class="container" style="padding-top:20px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+            <button class="alert-close">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <strong>EduSwap</strong> — Skill Barter Network &nbsp;|&nbsp;
+    Supporting UN SDG 4 (Quality Education) &amp; SDG 8 (Decent Work) &nbsp;|&nbsp;
+    <a href="{{ url_for('admin_login') }}">Admin Portal</a>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

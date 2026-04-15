@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Career Paths{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+
+  <div class="page-header">
+    <div>
+      <h1 class="section-title">Career skill paths</h1>
+      <p class="section-subtitle">Explore learning paths and find sessions to grow your skills</p>
+    </div>
+  </div>
+
+  <div class="skill-tree">
+    {% set icons = {'Programming': '💻', 'Design': '🎨', 'Business': '📊', 'Data': '📈', 'Languages': '🌍'} %}
+    {% set colors = {'Programming': '#4f46e5', 'Design': '#ec4899', 'Business': '#059669', 'Data': '#0891b2', 'Languages': '#d97706'} %}
+
+    {% for category, skills_list in skill_tree.items() %}
+      <div class="tree-category fade-in-card">
+        <div class="tree-category-title" style="color:{{ colors.get(category, 'var(--primary)') }}">
+          <span>{{ icons.get(category, '📚') }}</span> {{ category }}
+        </div>
+        <div class="tree-nodes">
+          {% for skill in skills_list %}
+            <span class="tree-node">{{ skill }}</span>
+            {% if not loop.last %}
+              <span class="tree-arrow">→</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div style="margin-top:14px;">
+          <a href="{{ url_for('skills') }}?subject={{ category }}" class="btn btn-secondary btn-sm">Find {{ category }} sessions</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="card" style="text-align:center;padding:32px;">
+    <div style="font-size:32px;margin-bottom:10px;">🎯</div>
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:8px;">Build your path with EduSwap</h2>
+    <p style="font-size:14px;color:var(--text-secondary);max-width:440px;margin:0 auto 20px;">
+      Attend sessions to earn Community Coins. Redeem coins for certificates. Use certificates to become a teacher. Teach to earn more coins. The loop continues.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('skills') }}" class="btn btn-primary">Browse sessions</a>
+      <a href="{{ url_for('rewards') }}" class="btn btn-accent">View rewards</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
